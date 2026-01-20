@@ -17,7 +17,7 @@ end
 
 Sidekiq.default_worker_options = { 'backtrace' => true }
 
-Redis.silence_deprecations = true 
+#Redis.silence_deprecations = true 
 
 unless Rails.env.development?
   Sidekiq::Web.use Rack::Auth::Basic do |username, password|

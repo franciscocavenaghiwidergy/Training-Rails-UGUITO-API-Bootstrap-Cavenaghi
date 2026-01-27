@@ -31,3 +31,11 @@
 
 es:
   hello: "Hola Mundo!"
+  activerecord:
+    errors:
+      models:
+        note:
+          attributes:
+            content:
+              too_long_for_review: "no puede superar %{limit} palabras para una nota de tipo reseña"
+

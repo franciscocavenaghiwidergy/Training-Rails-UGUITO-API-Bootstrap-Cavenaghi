@@ -13,9 +13,40 @@
 class Note < ApplicationRecord
   belongs_to :user
 
-  NOTE_TYPES = %w[review critique].freeze
+  delegate :utility, to: :user
+
+  enum note_type: {
+    review: 0,
+    critique: 1
+  }
 
   validates :title, presence: true
   validates :content, presence: true
-  validates :note_type, presence: true, inclusion: { in: NOTE_TYPES }
+
+  validate :get_word_limit
+
+  def word_count
+    return 0 if content.blank?
+
+    content.split(/\s+/).size
+  end
+
+  def content_length
+    utility.content_length_for(word_count)
+  end
+
+  def get_word_limit
+    return unless review?
+
+    limit = utility.get_word_limit
+
+    if word_count > limit
+      errors.add(
+        :content,
+        :too_long_for_review,
+        limit: limit
+      )
+    end
+  end
 end
+

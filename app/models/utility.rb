@@ -29,6 +29,38 @@ class Utility < ApplicationRecord
 
   store_accessor :integration_urls, :external_api_authentication_url, :books_data_url
 
+  SHORT_LIMIT  = nil
+  MEDIUM_LIMIT = nil
+  REVIEW_LIMIT = nil
+
+  def short_limit
+    self.class::SHORT_LIMIT
+  end
+
+  def medium_limit
+    self.class::MEDIUM_LIMIT
+  end
+
+  def get_word_quantity_limit
+    self.class::REVIEW_LIMIT
+  end
+
+  def get_word_limit
+    get_word_quantity_limit
+  end
+
+  def content_length_for(word_count)
+    return nil if short_limit.nil? || medium_limit.nil?
+
+    if word_count <= short_limit
+      'short'
+    elsif word_count <= medium_limit
+      'medium'
+    else
+      'long'
+    end
+  end
+
   def generate_entity_code
     return if code.present? && !code.to_i.zero?
     self.code = id

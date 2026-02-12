@@ -10,7 +10,6 @@ module Api
       end
 
       def show
-        # byebug # Descomentar para captura de current_user (tarea). Remover después del PR.
         render json: note,
                status: :ok,
                serializer: ShowNoteSerializer

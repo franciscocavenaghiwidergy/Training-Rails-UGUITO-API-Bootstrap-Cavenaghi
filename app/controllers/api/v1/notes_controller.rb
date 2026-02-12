@@ -1,6 +1,8 @@
 module Api
   module V1
     class NotesController < ApplicationController
+      before_action :authenticate_user!
+
       def index
         render json: notes_filtered,
                status: :ok,
@@ -8,6 +10,7 @@ module Api
       end
 
       def show
+        # byebug # Descomentar para captura de current_user (tarea). Remover después del PR.
         render json: note,
                status: :ok,
                serializer: ShowNoteSerializer
@@ -24,7 +27,7 @@ module Api
       end
 
       def notes_scope
-        Note.all
+        current_user.notes
       end
 
       def filtering_params
@@ -43,7 +46,7 @@ module Api
       end
 
       def note
-        @note ||= Note.find(params[:id])
+        @note ||= current_user.notes.find(params[:id])
       end
     end
   end

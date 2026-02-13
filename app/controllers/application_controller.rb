@@ -24,6 +24,11 @@ class ApplicationController < ActionController::Base
     nil
   end
 
+  def render_error(identifier, message: nil, meta: nil, status: :unprocessable_entity)
+    error_response = ErrorResponseBuilder.new(status).add_error(identifier, message: message, meta: meta)
+    render json: error_response.to_h, status: status
+  end
+
   def validation_error(resource)
     render json: {
       errors: [

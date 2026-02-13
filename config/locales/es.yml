@@ -31,11 +31,23 @@
 
 es:
   hello: "Hola Mundo!"
+  errors:
+    messages:
+      internal_server_error: "Algo salió mal"
+      not_authorized: "No estás autorizado para realizar esta acción"
+      param_is_missing: "Falta el parámetro requerido"
+      invalid_note_type: "El tipo de nota debe ser review o critique"
+      user_utility_mismatch: "El usuario no pertenece a la utility en contexto"
   activerecord:
     errors:
       models:
         note:
           attributes:
+            title:
+              blank: "no puede estar en blanco"
             content:
+              blank: "no puede estar en blanco"
               too_long_for_review: "no puede superar %{limit} palabras para una nota de tipo reseña"
+            note_type:
+              invalid: "no está incluido en la lista"
 

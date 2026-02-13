@@ -130,4 +130,213 @@ describe Api::V1::NotesController, type: :controller do
       end
     end
   end
+
+  describe 'POST #create' do
+    let(:valid_note_params) do
+      {
+        note: {
+          title: Faker::Lorem.sentence,
+          content: Faker::Lorem.paragraph,
+          type: 'review'
+        }
+      }
+    end
+
+    context 'when there is a user logged in' do
+      include_context 'with authenticated user'
+
+      before { request.headers['Utility-ID'] = user.utility.code }
+
+      context 'when creating a note with valid params (happy path)' do
+        before { post :create, params: valid_note_params }
+
+        it 'responds with 201 status' do
+          expect(response).to have_http_status(:created)
+        end
+
+        it 'responds with the created note json' do
+          expect(response_body['id']).to be_present
+          expect(response_body['title']).to eq(valid_note_params[:note][:title])
+          expect(response_body['content']).to eq(valid_note_params[:note][:content])
+          expect(response_body['type']).to eq('review')
+        end
+
+        it 'creates the note for the current user' do
+          expect(user.notes.reload.count).to eq(1)
+          expect(user.notes.last.title).to eq(valid_note_params[:note][:title])
+        end
+      end
+
+      context 'when creating a note with type critique' do
+        let(:critique_params) do
+          { note: valid_note_params[:note].merge(type: 'critique') }
+        end
+
+        before { post :create, params: critique_params }
+
+        it 'responds with 201 status' do
+          expect(response).to have_http_status(:created)
+        end
+
+        it 'creates the note with type critique' do
+          expect(response_body['type']).to eq('critique')
+        end
+      end
+
+      context 'when the note param is missing' do
+        let(:missing_parameter) { 'note' }
+
+        before { post :create, params: {} }
+
+        it_behaves_like 'bad request when a parameter is missing'
+      end
+
+      context 'when title is missing' do
+        let(:missing_parameter) { 'title' }
+
+        before do
+          post :create, params: {
+            note: valid_note_params[:note].except(:title)
+          }
+        end
+
+        it_behaves_like 'bad request when a parameter is missing'
+      end
+
+      context 'when content is missing' do
+        let(:missing_parameter) { 'content' }
+
+        before do
+          post :create, params: {
+            note: valid_note_params[:note].except(:content)
+          }
+        end
+
+        it_behaves_like 'bad request when a parameter is missing'
+      end
+
+      context 'when type is missing' do
+        let(:missing_parameter) { 'type' }
+
+        before do
+          post :create, params: {
+            note: valid_note_params[:note].except(:type)
+          }
+        end
+
+        it_behaves_like 'bad request when a parameter is missing'
+      end
+
+      context 'when note type is invalid' do
+        before do
+          post :create, params: {
+            note: valid_note_params[:note].merge(type: 'invalid_type')
+          }
+        end
+
+        it 'responds with 422 status' do
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+
+        it 'returns the invalid_note_type error message' do
+          expect(response_body['errors'].first['message'])
+            .to eq(I18n.t('errors.messages.invalid_note_type'))
+        end
+      end
+
+      context 'when user does not belong to the utility in context' do
+        before do
+          request.headers['Utility-ID'] = create(:north_utility).code
+          post :create, params: valid_note_params
+        end
+
+        it 'responds with 422 status' do
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+
+        it 'returns the user_utility_mismatch error message' do
+          expect(response_body['errors'].first['message'])
+            .to eq(I18n.t('errors.messages.user_utility_mismatch'))
+        end
+      end
+
+      context 'when review content exceeds word limit' do
+        let(:utility) { create(:north_utility) }
+        let(:user) { create(:user, utility: utility) }
+        let(:over_limit_content) { Faker::Lorem.words(number: 51).join(' ') }
+
+        before do
+          request.headers['Utility-ID'] = utility.code
+          post :create, params: {
+            note: valid_note_params[:note].merge(content: over_limit_content, type: 'review')
+          }
+        end
+
+        it 'responds with 400 status' do
+          expect(response).to have_http_status(:bad_request)
+        end
+
+        it 'returns validation errors' do
+          expect(response_body['errors']).to be_present
+          expect(response_body['errors'].first['detail']).to be_present
+        end
+      end
+
+      context 'when title is blank' do
+        before do
+          post :create, params: {
+            note: valid_note_params[:note].merge(title: '')
+          }
+        end
+
+        it 'responds with 400 status' do
+          expect(response).to have_http_status(:bad_request)
+        end
+
+        it 'returns validation errors for title' do
+          expect(response_body['errors']).to be_present
+        end
+      end
+
+      context 'when content is blank' do
+        before do
+          post :create, params: {
+            note: valid_note_params[:note].merge(content: '')
+          }
+        end
+
+        it 'responds with 400 status' do
+          expect(response).to have_http_status(:bad_request)
+        end
+
+        it 'returns validation errors for content' do
+          expect(response_body['errors']).to be_present
+        end
+      end
+    end
+
+    context 'when Utility-ID header is missing' do
+      include_context 'with authenticated user'
+
+      before { post :create, params: valid_note_params }
+
+      it 'responds with 400 status' do
+        expect(response).to have_http_status(:bad_request)
+      end
+
+      it 'returns the param is missing error' do
+        expect(response_body['errors'].first['message'])
+          .to eq(I18n.t('errors.messages.internal_server_error'))
+      end
+    end
+
+    context 'when there is not a user logged in' do
+      before do
+        request.headers['Utility-ID'] = create(:north_utility).code
+        post :create, params: valid_note_params
+      end
+
+      it_behaves_like 'unauthorized'
+    end
+  end
 end

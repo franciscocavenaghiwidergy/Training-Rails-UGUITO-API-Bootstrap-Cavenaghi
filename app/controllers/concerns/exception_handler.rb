@@ -25,9 +25,16 @@ module ExceptionHandler
 
   def render_incorrect_parameter(error)
     message = I18n.t('errors.messages.internal_server_error')
+    meta = parameter_missing_meta(error)
     render_error(
-      :param_is_missing, message: message, meta: error.message, status: :bad_request
+      :param_is_missing, message: message, meta: meta, status: :bad_request
     )
+  end
+
+  def parameter_missing_meta(error)
+    return error.message.lines.first&.strip unless error.respond_to?(:param)
+
+    "param is missing or the value is empty: #{error.param}"
   end
 
   def render_nothing_not_found

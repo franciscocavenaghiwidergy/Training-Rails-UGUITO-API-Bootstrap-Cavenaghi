@@ -39,6 +39,7 @@ class Note < ApplicationRecord
 
   def get_word_limit
     return unless review?
+    return unless user
 
     limit = utility.get_word_limit
 

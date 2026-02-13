@@ -29,20 +29,19 @@ class Utility < ApplicationRecord
 
   store_accessor :integration_urls, :external_api_authentication_url, :books_data_url
 
-  SHORT_LIMIT  = nil
   MEDIUM_LIMIT = nil
-  REVIEW_LIMIT = nil
-
-  def short_limit
-    self.class::SHORT_LIMIT
-  end
+  LONG_LIMIT   = nil
 
   def medium_limit
     self.class::MEDIUM_LIMIT
   end
 
+  def long_limit
+    self.class::LONG_LIMIT
+  end
+
   def get_word_quantity_limit
-    self.class::REVIEW_LIMIT
+    medium_limit
   end
 
   def get_word_limit
@@ -50,11 +49,11 @@ class Utility < ApplicationRecord
   end
 
   def content_length_for(word_count)
-    return nil if short_limit.nil? || medium_limit.nil?
+    return nil if medium_limit.nil? || long_limit.nil?
 
-    if word_count <= short_limit
+    if word_count <= medium_limit
       'short'
-    elsif word_count <= medium_limit
+    elsif word_count <= long_limit
       'medium'
     else
       'long'

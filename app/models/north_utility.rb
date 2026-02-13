@@ -1,5 +1,4 @@
 class NorthUtility < Utility
-  SHORT_LIMIT  = 50
-  MEDIUM_LIMIT = 100
-  REVIEW_LIMIT = 50
+  MEDIUM_LIMIT = 50
+  LONG_LIMIT   = 100
 end

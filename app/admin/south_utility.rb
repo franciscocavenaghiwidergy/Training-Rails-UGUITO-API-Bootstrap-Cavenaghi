@@ -6,7 +6,7 @@ ActiveAdmin.register SouthUtility do
 
   permit_params = %i[
     name code base_url external_api_key external_api_secret
-    external_api_authentication_url books_data_url
+    external_api_authentication_url books_data_url notes_data_url
   ]
 
   member_action :copy, method: :get do
@@ -16,7 +16,7 @@ ActiveAdmin.register SouthUtility do
 
   action_item :copy, only: :show do
     link_to(I18n.t('active_admin.clone_model', model: 'SouthUtility'),
-            copy_admin_north_utility_path(id: resource.id))
+            copy_admin_south_utility_path(id: resource.id))
   end
 
   controller do
@@ -47,6 +47,7 @@ ActiveAdmin.register SouthUtility do
       f.input :external_api_secret
       f.input :external_api_authentication_url, as: :url
       f.input :books_data_url, as: :url
+      f.input :notes_data_url, as: :url
       f.actions
     end
   end

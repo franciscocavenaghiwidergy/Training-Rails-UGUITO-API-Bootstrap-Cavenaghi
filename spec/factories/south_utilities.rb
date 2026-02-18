@@ -13,5 +13,8 @@ FactoryBot.define do
     books_data_url do
       'Libros'
     end
+    notes_data_url do
+      'Notas'
+    end
   end
 end

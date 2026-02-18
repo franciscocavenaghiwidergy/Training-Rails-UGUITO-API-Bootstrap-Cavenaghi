@@ -32,7 +32,9 @@ class Note < ApplicationRecord
   end
 
   def content_length
-    utility.content_length_for(word_count)
+    return 'short' unless utility
+
+    utility.content_length_for(word_count) || 'short'
   end
 
   def get_word_limit

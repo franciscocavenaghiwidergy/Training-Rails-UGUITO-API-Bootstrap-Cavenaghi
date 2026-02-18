@@ -1,0 +1,2 @@
+class IndexNoteSerializer < BaseNoteSerializer
+end

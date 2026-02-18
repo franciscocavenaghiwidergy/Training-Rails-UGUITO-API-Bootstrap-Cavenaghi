@@ -1,9 +1,7 @@
 class TestWorker
   include Sidekiq::Worker
-
-  def perform
-    # raise StandardError
+  def execute
     sleep(30)
-    puts('TEST WORKER')
+    [200, { result: 'TEST WORKER' }]
   end
 end

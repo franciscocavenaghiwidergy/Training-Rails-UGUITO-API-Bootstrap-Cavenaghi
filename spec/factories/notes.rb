@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :note do
-    title { "MyString" }
-    content { "MyText" }
-    note_type { "MyString" }
-    user { nil }
+    title { Faker::Lorem.sentence }
+    content { Faker::Lorem.paragraph }
+    note_type { :review }
+    association :user
   end
 end

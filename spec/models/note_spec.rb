@@ -8,7 +8,12 @@ RSpec.describe Note, type: :model do
 
   it { is_expected.to validate_presence_of(:title) }
   it { is_expected.to validate_presence_of(:content) }
-  it { is_expected.to belong_to(:user) }
+
+  it 'requires user' do
+    note_without_user = build(:note, user: nil, note_type: :critique)
+    expect(note_without_user).not_to be_valid
+    expect(note_without_user.errors[:user]).to be_present
+  end
 
   RSpec.shared_examples 'review word limit validation' do
     it 'is invalid when review content exceeds the word limit' do

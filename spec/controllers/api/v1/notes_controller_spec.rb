@@ -2,132 +2,130 @@ require 'rails_helper'
 
 describe Api::V1::NotesController, type: :controller do
   describe 'GET #index' do
-    let(:user_notes) { create_list(:note, 5, user: user) }
-
-    context 'when there is a user logged in' do
+    context 'when the user is authenticated' do
       include_context 'with authenticated user'
 
-      let!(:expected) do
-        ActiveModel::Serializer::CollectionSerializer.new(notes_expected,
-                                                          serializer: IndexNoteSerializer).to_json
+      let(:user_notes) { create_list(:note, 5, user: user) }
+
+      let(:ordered_notes) do
+        user_notes.sort_by(&:created_at).reverse
       end
 
-      context 'when fetching all the notes for user' do
-        let(:notes_expected) { user_notes.sort_by(&:created_at).reverse }
+      let(:expected) do
+        ActiveModel::Serializer::CollectionSerializer.new(
+          notes_expected,
+          serializer: IndexNoteSerializer
+        ).to_json
+      end
 
-        before { get :index }
-
-        it 'responds with the expected notes json' do
+      shared_examples 'a successful index response' do
+        it 'returns the expected notes' do
           expect(response_body.to_json).to eq(expected)
         end
 
-        it 'responds with 200 status' do
+        it 'responds with status 200' do
           expect(response).to have_http_status(:ok)
         end
       end
 
-      context 'when fetching notes with page and page size params' do
-        let(:page) { 1 }
-        let(:page_size) { 2 }
-        let(:notes_expected) { user_notes.sort_by(&:created_at).reverse.first(2) }
+      context 'when fetching all notes' do
+        let(:notes_expected) { ordered_notes }
 
-        before { get :index, params: { page: page, page_size: page_size } }
-
-        it 'responds with the expected notes' do
-          expect(response_body.to_json).to eq(expected)
+        before do
+          user_notes
+          get :index
         end
 
-        it 'responds with 200 status' do
-          expect(response).to have_http_status(:ok)
-        end
+        it_behaves_like 'a successful index response'
       end
 
-      context 'when fetching notes using type filter' do
+      context 'when paginating notes' do
+        let(:notes_expected) { ordered_notes.first(2) }
+
+        before do
+          user_notes
+          get :index, params: { page: 1, page_size: 2 }
+        end
+
+        it_behaves_like 'a successful index response'
+      end
+
+      context 'when filtering by type' do
         let!(:review_notes) { create_list(:note, 2, user: user, note_type: :review) }
         let!(:critique_notes) { create_list(:note, 2, user: user, note_type: :critique) }
-        let(:notes_expected) { critique_notes.sort_by(&:created_at).reverse }
+
+        let(:notes_expected) do
+          critique_notes.sort_by(&:created_at).reverse
+        end
 
         before { get :index, params: { type: 'critique' } }
 
-        it 'responds with expected notes filtered by type' do
-          expect(response_body.to_json).to eq(expected)
-        end
-
-        it 'responds with 200 status' do
-          expect(response).to have_http_status(:ok)
-        end
+        it_behaves_like 'a successful index response'
       end
 
-      context 'when fetching notes with invalid type filter' do
-        let(:notes_expected) { user_notes.sort_by(&:created_at).reverse }
+      context 'when filtering with an invalid type' do
+        let(:notes_expected) { ordered_notes }
 
-        before { get :index, params: { type: 'invalid_type' } }
-
-        it 'responds with all user notes (filter ignored)' do
-          expect(response_body.to_json).to eq(expected)
+        before do
+          user_notes
+          get :index, params: { type: 'invalid_type' }
         end
 
-        it 'responds with 200 status' do
-          expect(response).to have_http_status(:ok)
-        end
+        it_behaves_like 'a successful index response'
       end
     end
 
-    context 'when there is not a user logged in' do
-      context 'when fetching all the notes for user' do
-        before { get :index }
+    context 'when the user is not authenticated' do
+      before { get :index }
 
-        it_behaves_like 'unauthorized'
-      end
+      it_behaves_like 'unauthorized'
     end
   end
 
   describe 'GET #show' do
-    context 'when there is a user logged in' do
+    context 'when the user is authenticated' do
       include_context 'with authenticated user'
 
+      let(:note) { create(:note, user: user) }
       let(:expected) { ShowNoteSerializer.new(note, root: false).to_json }
 
-      context 'when fetching a valid note' do
-        let(:note) { create(:note, user: user) }
+      shared_examples 'a not found response' do
+        it 'responds with status 404' do
+          expect(response).to have_http_status(:not_found)
+        end
+      end
 
+      context 'when the note exists' do
         before { get :show, params: { id: note.id } }
 
-        it 'responds with the note json' do
+        it 'returns the requested note' do
           expect(response.body).to eq(expected)
         end
 
-        it 'responds with 200 status' do
+        it 'responds with status 200' do
           expect(response).to have_http_status(:ok)
         end
       end
 
-      context 'when fetching an invalid note (non-existent id)' do
+      context 'when the note does not exist' do
         before { get :show, params: { id: Faker::Number.number } }
 
-        it 'responds with 404 status' do
-          expect(response).to have_http_status(:not_found)
-        end
+        it_behaves_like 'a not found response'
       end
 
-      context 'when fetching a note that belongs to another user' do
-        let(:other_user) { create(:user) }
-        let(:other_user_note) { create(:note, user: other_user) }
+      context 'when the note belongs to another user' do
+        let(:other_note) { create(:note) }
 
-        before { get :show, params: { id: other_user_note.id } }
+        before { get :show, params: { id: other_note.id } }
 
-        it 'responds with 404 status' do
-          expect(response).to have_http_status(:not_found)
-        end
+        it_behaves_like 'a not found response'
       end
     end
 
-    context 'when there is not a user logged in' do
-      context 'when fetching a note' do
-        before { get :show, params: { id: Faker::Number.number } }
+    context 'when the user is not authenticated' do
+      before { get :show, params: { id: Faker::Number.number } }
 
-        it_behaves_like 'unauthorized'
-      end
+      it_behaves_like 'unauthorized'
     end
   end
 end

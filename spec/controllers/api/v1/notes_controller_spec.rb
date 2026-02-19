@@ -133,13 +133,8 @@ describe Api::V1::NotesController, type: :controller do
 
   describe 'POST #create' do
     let(:valid_note_params) do
-      {
-        note: {
-          title: Faker::Lorem.sentence,
-          content: Faker::Lorem.paragraph,
-          type: 'review'
-        }
-      }
+      attrs = attributes_for(:note)
+      { note: attrs.slice(:title, :content).merge(type: attrs[:note_type].to_s) }
     end
 
     context 'when there is a user logged in' do
@@ -154,16 +149,28 @@ describe Api::V1::NotesController, type: :controller do
           expect(response).to have_http_status(:created)
         end
 
-        it 'responds with the created note json' do
+        it 'responds with the created note id' do
           expect(response_body['id']).to be_present
+        end
+
+        it 'responds with the created note title' do
           expect(response_body['title']).to eq(valid_note_params[:note][:title])
+        end
+
+        it 'responds with the created note content' do
           expect(response_body['content']).to eq(valid_note_params[:note][:content])
+        end
+
+        it 'responds with the created note type' do
           expect(response_body['type']).to eq('review')
         end
 
         it 'creates the note for the current user' do
           expect(user.notes.reload.count).to eq(1)
-          expect(user.notes.last.title).to eq(valid_note_params[:note][:title])
+        end
+
+        it 'assigns the sent title to the created note' do
+          expect(user.notes.reload.last.title).to eq(valid_note_params[:note][:title])
         end
       end
 
@@ -184,47 +191,39 @@ describe Api::V1::NotesController, type: :controller do
       end
 
       context 'when the note param is missing' do
-        let(:missing_parameter) { 'note' }
-
         before { post :create, params: {} }
 
-        it_behaves_like 'bad request when a parameter is missing'
+        it_behaves_like 'bad request when a parameter is missing', 'note'
       end
 
       context 'when title is missing' do
-        let(:missing_parameter) { 'title' }
-
         before do
           post :create, params: {
             note: valid_note_params[:note].except(:title)
           }
         end
 
-        it_behaves_like 'bad request when a parameter is missing'
+        it_behaves_like 'bad request when a parameter is missing', 'title'
       end
 
       context 'when content is missing' do
-        let(:missing_parameter) { 'content' }
-
         before do
           post :create, params: {
             note: valid_note_params[:note].except(:content)
           }
         end
 
-        it_behaves_like 'bad request when a parameter is missing'
+        it_behaves_like 'bad request when a parameter is missing', 'content'
       end
 
       context 'when type is missing' do
-        let(:missing_parameter) { 'type' }
-
         before do
           post :create, params: {
             note: valid_note_params[:note].except(:type)
           }
         end
 
-        it_behaves_like 'bad request when a parameter is missing'
+        it_behaves_like 'bad request when a parameter is missing', 'type'
       end
 
       context 'when note type is invalid' do

@@ -1,4 +1,4 @@
-shared_examples 'bad request when a parameter is missing' do
+shared_examples 'bad request when a parameter is missing' do |missing_parameter|
   it 'returns status code bad request' do
     expect(response).to have_http_status(:bad_request)
   end

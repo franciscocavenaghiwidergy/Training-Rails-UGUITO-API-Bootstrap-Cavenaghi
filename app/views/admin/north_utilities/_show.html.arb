@@ -25,5 +25,11 @@ panel 'Utility' do
     row :notes_data_url do
       utility.notes_data_url
     end
+    row :notes_short_limit do
+      utility.notes_short_limit.present? ? utility.notes_short_limit : "(por defecto: #{utility.class::SHORT_LIMIT})"
+    end
+    row :notes_medium_limit do
+      utility.notes_medium_limit.present? ? utility.notes_medium_limit : "(por defecto: #{utility.class::MEDIUM_LIMIT})"
+    end
   end
 end

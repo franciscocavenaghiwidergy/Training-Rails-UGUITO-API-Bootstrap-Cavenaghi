@@ -1,13 +1,14 @@
 ActiveAdmin.register NorthUtility do
+  permit_params *%i[
+    name code base_url external_api_key external_api_secret
+    external_api_authentication_url books_data_url notes_data_url
+    notes_short_limit notes_medium_limit
+  ]
+
   filter :name
   filter :code
   filter :created_at
   filter :updated_at
-
-  permit_params = %i[
-    name code base_url external_api_key external_api_secret
-    external_api_authentication_url books_data_url notes_data_url
-  ]
 
   member_action :copy, method: :get do
     @north_utility = resource.dup
@@ -21,7 +22,12 @@ ActiveAdmin.register NorthUtility do
 
   controller do
     define_method :permitted_params do
-      params.permit(active_admin_namespace.permitted_params, north_utility: permit_params)
+      keys = %i[
+        name code base_url external_api_key external_api_secret
+        external_api_authentication_url books_data_url notes_data_url
+        notes_short_limit notes_medium_limit
+      ]
+      params.permit(active_admin_namespace.permitted_params, north_utility: keys)
     end
   end
 
@@ -49,6 +55,12 @@ ActiveAdmin.register NorthUtility do
       f.input :external_api_authentication_url, as: :url
       f.input :books_data_url, as: :url
       f.input :notes_data_url, as: :url
+      f.input :notes_short_limit,
+              label: 'Limite short notas',
+              hint: 'En blanco usa el valor por defecto (North: 50).'
+      f.input :notes_medium_limit,
+              label: 'Limite medium notas',
+              hint: 'En blanco usa el valor por defecto (North: 100).'
       f.actions
     end
   end

@@ -15,6 +15,8 @@
 #  jsonb                                :jsonb
 #  created_at                           :datetime         not null
 #  updated_at                           :datetime         not null
+#  notes_short_limit                    :integer
+#  notes_medium_limit                   :integer
 #
 class Utility < ApplicationRecord
   include EntityWithCode
@@ -34,11 +36,11 @@ class Utility < ApplicationRecord
   REVIEW_LIMIT = nil
 
   def short_limit
-    self.class::SHORT_LIMIT
+    limit_with_default(:notes_short_limit, self.class::SHORT_LIMIT)
   end
 
   def medium_limit
-    self.class::MEDIUM_LIMIT
+    limit_with_default(:notes_medium_limit, self.class::MEDIUM_LIMIT)
   end
 
   def get_word_quantity_limit
@@ -106,6 +108,10 @@ class Utility < ApplicationRecord
   end
 
   private
+
+  def limit_with_default(attribute, default)
+    self[attribute].nil? ? default : self[attribute]
+  end
 
   def utility_type
     type.chomp('Utility')

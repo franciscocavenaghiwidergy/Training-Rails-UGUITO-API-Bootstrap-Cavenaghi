@@ -9,9 +9,7 @@ shared_examples 'bad request when a parameter is missing' do |missing_parameter|
   end
 
   it 'returns the correct error meta message' do
-    expected_meta = ActionController::ParameterMissing.new(missing_parameter).message
-    meta = response_body['errors'].first['meta']
-    expect(meta).to eq(expected_meta),
-      "expected meta to be ParameterMissing message. expected=#{expected_meta.inspect}, got=#{meta.inspect}"
+    expect(response_body['errors'].first['meta'])
+      .to eq(I18n.t('errors.messages.param_is_missing_meta', param: missing_parameter))
   end
 end

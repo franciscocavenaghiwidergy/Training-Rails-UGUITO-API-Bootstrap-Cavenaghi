@@ -18,10 +18,9 @@ module Api
       end
 
       def create
-        permitted = create_params
-        raise Exceptions::InvalidParameterError, 'invalid_note_type' unless valid_note_type?(permitted[:type])
+        raise Exceptions::InvalidParameterError, 'invalid_note_type' unless valid_note_type?(create_params[:type])
 
-        new_note = current_user.notes.create(note_attributes_from(permitted))
+        new_note = current_user.notes.create(note_attributes_from(create_params))
         return validation_error(new_note) unless new_note.persisted?
 
         render json: new_note, status: :created, serializer: ShowNoteSerializer
@@ -30,11 +29,11 @@ module Api
       private
 
       def create_params
-        note_params = params.require(:note)
-        note_params.require(:title)
-        note_params.require(:content)
-        note_params.require(:type)
-        note_params.permit(:title, :content, :type)
+        params.require(:note).tap do |note_params|
+          note_params.require(:title)
+          note_params.require(:content)
+          note_params.require(:type)
+        end.permit(:title, :content, :type)
       end
 
       def validate_user_utility_context!

@@ -132,9 +132,11 @@ describe Api::V1::NotesController, type: :controller do
   end
 
   describe 'POST #create' do
-    let(:valid_note_params) do
+    let(:valid_note_params) { { note: note_request_attributes } }
+
+    def note_request_attributes
       attrs = attributes_for(:note)
-      { note: attrs.slice(:title, :content).merge(type: attrs[:note_type].to_s) }
+      { title: attrs[:title], content: attrs[:content], type: attrs[:note_type].to_s }
     end
 
     context 'when there is a user logged in' do
@@ -162,7 +164,7 @@ describe Api::V1::NotesController, type: :controller do
         end
 
         it 'responds with the created note type' do
-          expect(response_body['type']).to eq('review')
+          expect(response_body['type']).to eq(valid_note_params[:note][:type])
         end
 
         it 'creates the note for the current user' do
@@ -277,6 +279,9 @@ describe Api::V1::NotesController, type: :controller do
 
         it 'returns validation errors' do
           expect(response_body['errors']).to be_present
+        end
+
+        it 'returns error detail for validation' do
           expect(response_body['errors'].first['detail']).to be_present
         end
       end

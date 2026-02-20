@@ -24,10 +24,22 @@ module ExceptionHandler
   end
 
   def render_incorrect_parameter(error)
-    message = I18n.t('errors.messages.internal_server_error')
     render_error(
-      :param_is_missing, message: message, meta: error.message, status: :bad_request
+      :param_is_missing,
+      message: param_is_missing_message,
+      meta: parameter_missing_meta(error),
+      status: :bad_request
     )
+  end
+
+  def param_is_missing_message
+    I18n.t('errors.messages.internal_server_error')
+  end
+
+  def parameter_missing_meta(error)
+    return error.message.lines.first&.strip unless error.respond_to?(:param)
+
+    I18n.t('errors.messages.param_is_missing_meta', param: error.param)
   end
 
   def render_nothing_not_found

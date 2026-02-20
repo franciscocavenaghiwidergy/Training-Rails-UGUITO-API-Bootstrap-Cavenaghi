@@ -1,4 +1,4 @@
-shared_examples 'bad request when a parameter is missing' do
+shared_examples 'bad request when a parameter is missing' do |missing_parameter|
   it 'returns status code bad request' do
     expect(response).to have_http_status(:bad_request)
   end
@@ -10,6 +10,6 @@ shared_examples 'bad request when a parameter is missing' do
 
   it 'returns the correct error meta message' do
     expect(response_body['errors'].first['meta'])
-      .to eq "param is missing or the value is empty: #{missing_parameter}"
+      .to eq(I18n.t('errors.messages.param_is_missing_meta', param: missing_parameter))
   end
 end

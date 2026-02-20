@@ -2,6 +2,8 @@ module Api
   module V1
     class NotesController < ApplicationController
       before_action :authenticate_user!
+      before_action :utility, only: [:create]
+      before_action :validate_user_utility_context!, only: [:create]
 
       def index
         render json: notes_filtered,
@@ -15,7 +17,34 @@ module Api
                serializer: ShowNoteSerializer
       end
 
+      def create
+        raise Exceptions::InvalidParameterError, 'invalid_note_type' unless valid_note_type?(create_params[:type])
+
+        new_note = current_user.notes.create(note_attributes_from(create_params))
+        return validation_error(new_note) unless new_note.persisted?
+
+        render json: new_note, status: :created, serializer: ShowNoteSerializer
+      end
+
       private
+
+      def create_params
+        params.require(:note).tap do |note_params|
+          note_params.require(:title)
+          note_params.require(:content)
+          note_params.require(:type)
+        end.permit(:title, :content, :type)
+      end
+
+      def validate_user_utility_context!
+        return if current_user.utility_matches?(utility)
+
+        raise Exceptions::InvalidParameterError, 'user_utility_mismatch'
+      end
+
+      def note_attributes_from(permitted)
+        permitted.slice(:title, :content).merge(note_type: permitted[:type])
+      end
 
       def notes_filtered
         @notes_filtered ||= notes_scope

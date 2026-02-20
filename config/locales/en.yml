@@ -31,3 +31,23 @@
 
 en:
   hello: "Hello world"
+  errors:
+    messages:
+      internal_server_error: "Something went wrong"
+      not_authorized: "You are not authorized to perform this action"
+      param_is_missing: "Required parameter is missing"
+      param_is_missing_meta: "param is missing or the value is empty: %{param}"
+      invalid_note_type: "Note type must be review or critique"
+      user_utility_mismatch: "User does not belong to the utility in context"
+  activerecord:
+    errors:
+      models:
+        note:
+          attributes:
+            title:
+              blank: "can't be blank"
+            content:
+              blank: "can't be blank"
+              too_long_for_review: "cannot exceed %{limit} words for a review note"
+            note_type:
+              invalid: "is not included in the list"

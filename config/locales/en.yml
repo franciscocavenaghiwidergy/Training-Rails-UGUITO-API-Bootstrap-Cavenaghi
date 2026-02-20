@@ -38,6 +38,8 @@ en:
       param_is_missing: "Required parameter is missing"
       invalid_note_type: "Note type must be review or critique"
       user_utility_mismatch: "User does not belong to the utility in context"
+      service_unavailable: "The service is unavailable"
+      utility_service_unavailable: "The utility service is unavailable"
   activerecord:
     errors:
       models:

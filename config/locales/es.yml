@@ -38,6 +38,8 @@ es:
       param_is_missing: "Falta el parámetro requerido"
       invalid_note_type: "El tipo de nota debe ser review o critique"
       user_utility_mismatch: "El usuario no pertenece a la utility en contexto"
+      service_unavailable: "El servicio no está disponible"
+      utility_service_unavailable: "El servicio de la utility no está disponible"
   activerecord:
     errors:
       models:

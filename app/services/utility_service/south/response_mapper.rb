@@ -5,7 +5,24 @@ module UtilityService
         { books: map_books(response_body['Libros']) }
       end
 
+      def retrieve_notes(_response_code, response_body)
+        { notes: map_notes(response_body['Notas']) }
+      end
+
       private
+
+      def map_notes(notes)
+        return [] if notes.blank?
+
+        notes.map do |note|
+          {
+            id: note['Id'],
+            title: note['Titulo'],
+            content: note['Contenido'],
+            author: note['Autor']
+          }
+        end
+      end
 
       def map_books(books)
         books.map do |book|

@@ -8,6 +8,9 @@ ActiveAdmin.register_page 'Dashboard' do
       table_for Utility.order(code: :asc) do
         column('Name', &:name)
         column('Code', &:code)
+        column('Type', &:type)
+        column('Base URL') { |u| u.base_url.present? ? truncate(u.base_url, length: 50) : '—' }
+        column('Created', &:created_at)
         column('Actions') do |utility|
           buffer = link_to('Ver', send("admin_#{utility.class.to_s.underscore}_path", utility))
           buffer += ' '

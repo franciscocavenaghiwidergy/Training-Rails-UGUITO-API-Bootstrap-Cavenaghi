@@ -34,7 +34,24 @@ ActiveAdmin.register NorthUtility do
   end
 
   show do |north|
-    render 'show', locals: { north: north }
+    attributes_table do
+      row :id
+      row :name
+      row :code
+      row :type
+      row :base_url
+      row :external_api_key
+      row :external_api_secret
+      row :external_api_authentication_url
+      row :books_data_url
+      row :notes_data_url
+      row :external_api_access_token do |u|
+        u.external_api_access_token.present? ? '••••••••' : status_tag('no')
+      end
+      row :external_api_access_token_expiration
+      row :created_at
+      row :updated_at
+    end
     active_admin_comments
   end
 

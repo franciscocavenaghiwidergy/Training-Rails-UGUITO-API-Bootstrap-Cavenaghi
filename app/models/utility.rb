@@ -36,11 +36,11 @@ class Utility < ApplicationRecord
   REVIEW_LIMIT = nil
 
   def short_limit
-    self[:notes_short_limit].nil? ? self.class::SHORT_LIMIT : self[:notes_short_limit]
+    limit_with_default(:notes_short_limit, self.class::SHORT_LIMIT)
   end
 
   def medium_limit
-    self[:notes_medium_limit].nil? ? self.class::MEDIUM_LIMIT : self[:notes_medium_limit]
+    limit_with_default(:notes_medium_limit, self.class::MEDIUM_LIMIT)
   end
 
   def get_word_quantity_limit
@@ -108,6 +108,10 @@ class Utility < ApplicationRecord
   end
 
   private
+
+  def limit_with_default(attribute, default)
+    self[attribute].nil? ? default : self[attribute]
+  end
 
   def utility_type
     type.chomp('Utility')
